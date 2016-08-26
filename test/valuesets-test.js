@@ -3,14 +3,14 @@ sch = require('../src/generation');
 utils = require('../src/utils');
 helpers = require('./helpers');
 
-var tests = helpers.loadYaml('./elements-test.yaml');
+var tests = helpers.loadYaml('./valuesets-test.yaml');
 fs = require('fs')
 describe('conversion', function () {
     tests.forEach(function(test){
-        it(JSON.stringify(test.element), function () {
+        it(test.element.id, function () {
             res  = sch.element2schema(test.element);
-            //test.result = res
             assert.deepEqual(res, test.result);
         });
     });
 });
+

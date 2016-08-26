@@ -1,5 +1,3 @@
-tv4 = require('tv4');
-
 settings = {validate: {references: false}};
 
 exports.settings = settings;
@@ -57,6 +55,10 @@ var elementType = function(el){
     }
     if (code === 'BackboneElement') {
         return 'object';
+    }
+    if (code == "code" && utils.getIn(el, ['binding', 'strength']) == "required"){
+      var vs = utils.getIn(el, ['binding', 'valueSetReference', 'reference'])
+      if(vs) code = vs.split('/').slice(-1)[0] ;
     }
     return {$ref: typeRef(code)};
 };
@@ -226,12 +228,34 @@ var addStructureDefinition = function(schema, structureDefinition){
 var addValueSet = function(schema, valueSet){
 };
 
+function getCodes(concept){
+  var res =  concept.map(function(c){return c.code});
+  return concept.reduce(function(acc, entry){
+    if(entry.concept){
+      return acc.concat(getCodes(entry.concept))
+    }
+    return acc;
+  }, res);
+}
+
+var addCodeSystem = function(schema, valueSet){
+  if (utils.getIn(valueSet, ['concept'])){
+    schema.definitions[valueSet.id] = {
+      enum: getCodes(valueSet.concept)
+    };
+  }
+
+  return schema;
+};
+
 var add = function(schema, resource){
     var rt = resource.resourceType;
     if(rt == 'StructureDefinition'){
         return  addStructureDefinition(schema, resource);
     } else if (rt == 'ValueSet'){
         return addValueSet(schema, resource);
+    } else if (rt == 'CodeSystem'){
+        return addCodeSystem(schema, resource);
     } else if (rt == 'Bundle'){
         resource.entry.reduce(function(acc, entry){
             return add(acc, entry.resource);
@@ -258,7 +282,7 @@ var fixSchema = function(schema){
 
 function makeSchema(cb, opts){
     var schema = { type: 'object' };
-    var oldSettings = settings; 
+    var oldSettings = settings;
 
     if(opts){ settings = utils.merge(settings, opts); }
 

@@ -6,12 +6,15 @@ var helpers = require('./helpers');
 var schema = sch.makeSchema(function(s){
     var profiles = require(helpers.FHIR_DIR + 'profiles-resources.json');
     var types = require(helpers.FHIR_DIR + 'profiles-types.json');
+    var valuesets = require(helpers.FHIR_DIR + 'valuesets.json');
     s.add(profiles);
     s.add(types);
+    s.add(valuesets);
     return s;
 });
 
 console.log('HERE', schema.validate({resourceType: "Patient", "fo": "bar", birthDate: '111'}));
+console.log('HERE', schema.validate({resourceType: "Patient", "gender": "male"}));
 
 describe('conversion', function () {
     var errors = 0;

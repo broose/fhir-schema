@@ -15,4 +15,4 @@ fhir/
 src/bundled.js
 src/fhir.schema.jsondemo/dist
 examples/
-build
+build/fhir.schema.yaml
